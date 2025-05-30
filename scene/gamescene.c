@@ -1,4 +1,5 @@
 #include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_ttf.h>
 #include "gamescene.h"
 #include "sceneManager.h"
 #include "../element/element.h"
@@ -7,6 +8,7 @@
 #include "../element/teleport.h"
 #include "../element/tree.h"
 #include "../element/projectile.h"
+#include "../element/Ball.h"
 #include "../element/platform.h"
 #include <allegro5/allegro_image.h>
 #define CLOUD1_X  200
@@ -34,7 +36,6 @@
 #define STAIRS_W  128  
 #define STAIRS_H   64 
 
-void Character_ResetOnPlatform(Character *ch);
 /*
    [GameScene function]
 */
@@ -44,7 +45,7 @@ Scene *New_GameScene(int label)
     Scene *pObj = New_Scene(label);
 
     // 載入背景圖
-    pDerivedObj->background_count = 6; 
+    pDerivedObj->background_count = 6; // 假設有 2 張背景圖
     pDerivedObj->backgrounds[0] = al_load_bitmap("assets/image/stage1.png");
     assert(pDerivedObj->backgrounds[0] && "Failed to load stage1.png!");
     pDerivedObj->backgrounds[1] = al_load_bitmap("assets/image/stage2.png");
@@ -58,12 +59,16 @@ Scene *New_GameScene(int label)
     pDerivedObj->backgrounds[5] = al_load_bitmap("assets/image/stage6.png");
     assert(pDerivedObj->backgrounds[5] && "Failed to load stage6.png!");
 
-    pDerivedObj->current_background = 0;
-    pDerivedObj->background = pDerivedObj->backgrounds[0];
+    // 读取
+    if (g_has_saved_player) {
+        pDerivedObj->current_background = g_saved_background;
+    } else {
+        pDerivedObj->current_background = 0;
+    }
+    pDerivedObj->background = pDerivedObj->backgrounds[pDerivedObj->current_background];
 
-    // 設置初始背景圖
-    pDerivedObj->current_background = 0;
-    pDerivedObj->background = pDerivedObj->backgrounds[0];
+    //計時
+    pDerivedObj->timer_font = al_load_ttf_font("assets/font/pirulen.ttf", 36, 0);
 
     // 註冊角色和其他元素
     //_Register_elements(pObj, New_Floor(Floor_L));
@@ -253,7 +258,27 @@ void game_scene_draw(Scene *self)
     
     // 4. 更新显示（如果在主循环中已调用，这里可以省略）
     // al_flip_display();
+
+    // 加在繪製完背景與元素之後
+    double current_time = al_get_time();
+    double elapsed_time = current_time - gs->start_time;
+
+    // 顯示時間（確保你已經初始化字型系統並載入字型）
+ 
+    if (gs->timer_font) {
+    char time_str[32];
+    snprintf(time_str, sizeof(time_str), "Time: %.1f s", elapsed_time);
+
+    int text_width = al_get_text_width(gs->timer_font, time_str);
+    int text_height = al_get_font_line_height(gs->timer_font);
+
+    int x = (WIDTH - text_width) / 2;  // 水平置中
+    int y = text_height / 2;            // 靠近畫面上方，但不貼邊，留點空間
+
+    al_draw_text(gs->timer_font, al_map_rgb(255, 0, 0), x, y, 0, time_str);
 }
+}
+
 void game_scene_destroy(Scene *self)
 {
     // 在确定要切出游戏场景前：
@@ -269,8 +294,10 @@ void game_scene_destroy(Scene *self)
         g_saved_prev_space    = ch->prev_space;
         g_has_saved_player    = true;
     }
+    GameScene *gs = (GameScene *)self->pDerivedObj;
+    g_saved_background = gs->current_background;
     GameScene *Obj = ((GameScene *)(self->pDerivedObj));
-
+    
     // 銷毀所有背景圖
     for (int i = 0; i < Obj->background_count; i++)
     {
@@ -288,6 +315,9 @@ void game_scene_destroy(Scene *self)
 
     free(Obj);
     free(self);
+
+    if (Obj->timer_font)
+    al_destroy_font(Obj->timer_font);
 }
 
 void Character_ResetOnPlatform(Character *ch) {

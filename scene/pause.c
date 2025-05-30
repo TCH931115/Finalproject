@@ -6,12 +6,17 @@
 #include "pause.h"
 #include <stdbool.h>
 #include "sceneManager.h"
+#include "gamescene.h"
 #include <assert.h>
 #include "../GAME_ASSERT.h"
 #define CONTINUE_X 250
 #define CONTINUE_Y 300
 #define CONTINUE_W 1100
 #define CONTINUE_H 150
+#define EXIT_X 250
+#define EXIT_Y 900
+#define EXIT_W 1100
+#define EXIT_H 150
 
 /*
    [Pause function]
@@ -56,41 +61,45 @@ Scene *New_Pause(int label)
 void pause_update(Scene *self)
 {
     Pause *Obj = ((Pause *)(self->pDerivedObj));
-    ALLEGRO_MOUSE_STATE mouse_state;
-
-    // 獲取滑鼠狀態
-    al_get_mouse_state(&mouse_state);
-
-    // 滑桿範圍
+    // Slider range
     float slider_left = Obj->slider_x;
     float slider_right = Obj->slider_x + Obj->slider_width;
-    float slider_top = Obj->slider_y - 10; // 滑塊半徑範圍
+    float slider_top = Obj->slider_y - 10; // Slider hitbox
     float slider_bottom = Obj->slider_y + 10;
 
-    // 檢查滑鼠是否點擊滑桿
-    if (mouse_state.buttons & 1) { // 左鍵按下
-        if (mouse_state.x >= slider_left && mouse_state.x <= slider_right &&
-            mouse_state.y >= slider_top && mouse_state.y <= slider_bottom) {
-            Obj->slider_dragging = true;
+    // Check for mouse button down (start dragging or handle clicks)
+    if (mouse_state[1] && !Obj->slider_dragging) { // Left button pressed, not yet dragging
+        if (mouse.x >= slider_left && mouse.x <= slider_right &&
+            mouse.y >= slider_top && mouse.y <= slider_bottom) {
+            Obj->slider_dragging = true; // Start dragging
         }
-        // CONTINUE 按鈕區域
-        if (mouse_state.x >= CONTINUE_X && mouse_state.x <= CONTINUE_X + CONTINUE_W &&
-            mouse_state.y >= CONTINUE_Y && mouse_state.y <= CONTINUE_Y + CONTINUE_H) {
+        // CONTINUE button
+        else if (mouse.x >= CONTINUE_X && mouse.x <= CONTINUE_X + CONTINUE_W &&
+                 mouse.y >= CONTINUE_Y && mouse.y <= CONTINUE_Y + CONTINUE_H) {
             self->scene_end = true;
-            window = 1;
+            window = GameScene_L;
+        } 
+        // EXIT button
+        else if (mouse.x >= EXIT_X && mouse.x <= EXIT_X + EXIT_W &&
+                 mouse.y >= EXIT_Y && mouse.y <= EXIT_Y + EXIT_H) {
+            self->scene_end = true;
+            window = Menu_L;
         }
-    } else {
-        Obj->slider_dragging = false; // 滑鼠釋放時停止拖動
     }
 
-    // 如果正在拖動，更新滑塊位置和音量
+    // Stop dragging when mouse button is released
+    if (!mouse_state[1]) {
+        Obj->slider_dragging = false;
+    }
+
+    // Update slider position if dragging
     if (Obj->slider_dragging) {
-        // 計算滑塊位置（0.0 到 1.0）
-        Obj->slider_pos = (mouse_state.x - Obj->slider_x) / Obj->slider_width;
+        // Calculate slider position (0.0 to 1.0)
+        Obj->slider_pos = (mouse.x - Obj->slider_x) / Obj->slider_width;
         if (Obj->slider_pos < 0.0) Obj->slider_pos = 0.0;
         if (Obj->slider_pos > 1.0) Obj->slider_pos = 1.0;
 
-        // 更新音量
+        // Update volume
         Obj->volume = Obj->slider_pos;
         al_set_sample_instance_gain(Obj->sample_instance, Obj->volume);
     }
