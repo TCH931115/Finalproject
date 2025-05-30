@@ -35,6 +35,7 @@
 #define STAIRS_W  128  
 #define STAIRS_H   64 
 
+int g_saved_background = 0; // 初始化值根據需求設定
 /*
    [GameScene function]
 */

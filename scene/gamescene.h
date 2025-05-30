@@ -7,6 +7,7 @@
 /*
    [game scene object]
 */
+extern int g_saved_background;
 typedef enum EleType{
     Floor_L,
     Teleport_L,
