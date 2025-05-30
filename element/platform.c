@@ -52,22 +52,50 @@ void Platform_interact(Elements *self)
         Elements *tar = chars.arr[i];
         Character *chara = (Character *)tar->pDerivedObj;
 
-        // Predict next Y position
+        // 1. 水平碰撞检测
+        bool horizontal_overlap = 
+            chara->x + chara->width > plat->x &&
+            chara->x < plat->x + plat->w;
+        
+        bool vertical_overlap = 
+            chara->y < plat->y + plat->h &&
+            chara->y + chara->height > plat->y;
+        
+        if (horizontal_overlap && vertical_overlap) {
+            // 计算角色中心与平台中心的相对位置
+            float char_center = chara->x + chara->width / 2;
+            float plat_center = plat->x + plat->w / 2;
+            
+            // 计算水平穿透深度
+            float penetration_left = (chara->x + chara->width) - plat->x;
+            float penetration_right = (plat->x + plat->w) - chara->x;
+            
+            // 根据角色位置决定推开方向
+            if (char_center < plat_center) {
+                // 角色在平台左侧，向右推开
+                _Character_update_position(tar, -penetration_left, 0);
+            } else {
+                // 角色在平台右侧，向左推开
+                _Character_update_position(tar, penetration_right, 0);
+            }
+        }
+
+        // 2. 垂直碰撞检测（角色落在平台上）
         float nextY = chara->y + chara->jump_velocity;
-
-        // AABB collision: character landing on platform
-        if (chara->x + chara->width  > plat->x &&
-            chara->x                < plat->x + plat->w &&
+        
+        // 优化检测条件：确保角色正在下落
+        bool is_falling = chara->jump_velocity > 0;
+        
+        if (horizontal_overlap &&
+            is_falling &&
             chara->y + chara->height <= plat->y &&
-            nextY + chara->height   >= plat->y) {
-
-            // Snap character onto platform
-            _Character_update_position(tar,
-                0,
-                plat->y - (chara->y + chara->height)
-            );
-            // Reset vertical velocity and state
+            nextY + chara->height >= plat->y)
+        {
+            // 将角色放在平台顶部
+            _Character_update_position(tar, 0, plat->y - (chara->y + chara->height));
+            // 重置垂直速度和状态
             chara->jump_velocity = 0;
+            chara->jump_count = 0; // 重置跳跃计数
             chara->state = STOP;
         }
     }
