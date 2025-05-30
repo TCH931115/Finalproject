@@ -8,7 +8,6 @@
 #include "../element/teleport.h"
 #include "../element/tree.h"
 #include "../element/projectile.h"
-#include "../element/Ball.h"
 #include "../element/platform.h"
 #include <allegro5/allegro_image.h>
 #define CLOUD1_X  200
