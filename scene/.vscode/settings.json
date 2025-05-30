@@ -1,22 +1,4 @@
 {
-  "terminal.integrated.env.windows": {
-    "PATH": "${workspaceFolder}\\..\\MinGW\\bin;${env:PATH}"
-  },
-  "files.associations": {
-    "tree.h": "c",
-    "rectangle.h": "c",
-    "ball.h": "c",
-    "charater.h": "c",
-    "gamescene.h": "c",
-    "menu.h": "c",
-    "algif.h": "c",
-    "scene.h": "c",
-    "allegro_font.h": "c",
-    "allegro_audio.h": "c",
-    "allegro_acodec.h": "c",
-    "global.h": "c",
-    "shape.h": "c"
-  },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
   "C_Cpp_Runner.debuggerPath": "gdb",

@@ -5,6 +5,15 @@
 #include <allegro5/allegro_ttf.h>
 #include "menu.h"
 #include <stdbool.h>
+#include "sceneManager.h"
+#define START_X 650
+#define START_Y 700
+#define START_W 550
+#define START_H 150
+#define SETTING_X 650
+#define SETTING_Y 900
+#define SETTING_W 650
+#define SETTING_H 150
 /*
    [Menu function]
 */
@@ -35,19 +44,28 @@ Scene *New_Menu(int label)
 }
 void menu_update(Scene *self)
 {
-    if (key_state[ALLEGRO_KEY_ENTER])
-    {
-        self->scene_end = true;
-        window = 1;
+    // 檢查滑鼠點擊
+    if (mouse_state[1]) { // 1 代表左鍵
+        // 檢查是否點擊在 START 按鈕上
+        if (mouse.x >= START_X && mouse.x <= START_X + START_W &&
+            mouse.y >= START_Y && mouse.y <= START_Y + START_H) {
+            self->scene_end = true;
+            window = 1;
+        }
+        // 檢查是否點擊在 SETTING 按鈕上
+        else if(mouse.x >= SETTING_X && mouse.x <= SETTING_X + SETTING_W &&
+            mouse.y >= SETTING_Y && mouse.y <= SETTING_Y + SETTING_H) {
+            self->scene_end = true;
+            window = 2;
+        }
+        mouse_state[1] = false; 
     }
     return;
 }
 void menu_draw(Scene *self)
 {
     Menu *Obj = ((Menu *)(self->pDerivedObj));
-    al_draw_text(Obj->font, al_map_rgb(255, 255, 255), Obj->title_x, Obj->title_y, ALLEGRO_ALIGN_CENTRE, "Press 'Enter' to start");
-    al_draw_rectangle(Obj->title_x - 150, Obj->title_y - 30, Obj->title_x + 150, Obj->title_y + 30, al_map_rgb(255, 255, 255), 0);
-    al_play_sample_instance(Obj->sample_instance);
+    al_play_sample_instance(Obj->sample_instance); // 播音樂
 }
 void menu_destroy(Scene *self)
 {

@@ -1,8 +1,8 @@
 #ifndef CHARATER_H_INCLUDED
 #define CHARATER_H_INCLUDED
-#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_audio.h> //播放攻擊音效
 #include "element.h"
-#include "../shapes/Shape.h"
+#include "../shapes/Shape.h" //角色碰撞用的 hitbox
 #include "../algif5/algif.h"
 #include <stdbool.h>
 
@@ -11,21 +11,26 @@
 */
 typedef enum CharacterType
 {
-    STOP = 0,
-    MOVE,
-    ATK
+    STOP = 0, //停止不動
+    MOVE, //移動
+    JUMP, //跳躍
 } CharacterType;
 typedef struct _Character
 {
-    int x, y;
-    int width, height;              // the width and height of image
-    bool dir;                       // true: face to right, false: face to left
+    int x, y;                       // 位置座標
+    int width, height;              // 角色圖片的寬高
+    bool dir;                       // true 為右, false 為左
     int state;                      // the state of character
-    ALGIF_ANIMATION *gif_status[3]; // gif for each state. 0: stop, 1: move, 2:attack
-    ALLEGRO_SAMPLE_INSTANCE *atk_Sound;
-    int anime;      // counting the time of animation
-    int anime_time; // indicate how long the animation
-    bool new_proj;
+    ALGIF_ANIMATION *gif_status[3]; // [0]：停止動畫, [1]：移動動畫, [2]：攻擊動畫
+    ALLEGRO_SAMPLE_INSTANCE *atk_Sound; //攻擊時播放的音效
+    int anime;      // 計數動畫時間
+    int anime_time; // 動畫總時長
+    bool new_proj; // 是否要發射投射物（如子彈、火球）
+    int ground_y;         // 記住地面位置（避免無限掉落）
+    int jump_velocity;
+    int jump_count;    // 控制跳躍速度
+    bool prev_space;
+    float default_ground_y;
     Shape *hitbox; // the hitbox of object
 } Character;
 Elements *New_Character(int label);

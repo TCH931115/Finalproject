@@ -7,6 +7,7 @@
 /*
    [scene object]
 */
+
 typedef struct EPNode
 {
     int id;
